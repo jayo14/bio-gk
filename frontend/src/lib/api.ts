@@ -75,13 +75,21 @@ export type SupporterEntry = {
   rank: number;
   supporter_name: string;
   total_amount_kobo: number;
+  total_amount_naira?: number;
   interaction_count: number;
   last_supported_at: string;
 };
 
 export type LeaderboardResponse = {
   period: string;
+  enabled?: boolean;
   leaderboard: SupporterEntry[];
+};
+
+export type BankItem = {
+  name: string;
+  code: string;
+  slug: string;
 };
 
 export type CreatorDashboardData = {
@@ -118,7 +126,10 @@ export type InteractionItem = {
   sender_name: string;
   sender_contact?: string;
   amount_kobo: number;
+  amount_naira: number;
+  currency: string;
   interaction_type: 'priority_dm' | 'public_tip' | 'whatsapp_pass';
+  type_display?: string;
   message_body: string;
   payment_status: 'pending' | 'verified' | 'read' | 'archived' | 'refunded';
   is_public_on_wall: boolean;
@@ -133,7 +144,7 @@ export async function signup(payload: { email: string; password: string; display
   });
   if (typeof window !== 'undefined') {
     localStorage.setItem('bg_user', JSON.stringify(result.user));
-    localStorage.removeItem('bg_token'); // Ensure no token stored in localStorage
+    localStorage.removeItem('bg_token');
   }
   return result;
 }
@@ -145,7 +156,7 @@ export async function login(payload: { email: string; password: string }) {
   });
   if (typeof window !== 'undefined') {
     localStorage.setItem('bg_user', JSON.stringify(result.user));
-    localStorage.removeItem('bg_token'); // Ensure no token stored in localStorage
+    localStorage.removeItem('bg_token');
   }
   return result;
 }
@@ -181,4 +192,55 @@ export async function getLeaderboard(username: string, period?: string): Promise
   });
   if (!response.ok) throw new Error('Could not load leaderboard');
   return response.json();
+}
+
+export async function getCreatorDashboard(): Promise<CreatorDashboardData> {
+  return apiRequest<CreatorDashboardData>('/creators/dashboard/');
+}
+
+export async function getBanksList(): Promise<{ banks: BankItem[] }> {
+  return apiRequest<{ banks: BankItem[] }>('/creators/banks/');
+}
+
+export async function resolveBankAccount(account_number: string, bank_code: string) {
+  return apiRequest<{ account_name: string; account_number: string; bank_code: string }>('/creators/bank/resolve/', {
+    method: 'POST',
+    body: JSON.stringify({ account_number, bank_code }),
+  });
+}
+
+export async function connectBankAccount(payload: { bank_code: string; bank_name: string; account_number: string }) {
+  return apiRequest<{ detail: string; creator: CreatorDashboardData['creator'] }>('/creators/bank/connect/', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateCreatorProfile(payload: Partial<CreatorDashboardData['creator']>) {
+  return apiRequest<{ detail: string; creator: CreatorDashboardData['creator'] }>('/creators/profile/', {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getInboxInteractions(params?: { status?: string; type?: string }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set('status', params.status);
+  if (params?.type) query.set('type', params.type);
+  const qStr = query.toString() ? `?${query.toString()}` : '';
+  return apiRequest<{ count: number; results: InteractionItem[] }>(`/interactions/inbox/${qStr}`);
+}
+
+export async function markInteractionRead(id: string) {
+  return apiRequest<{ detail: string; interaction: InteractionItem }>(`/interactions/${id}/read/`, {
+    method: 'POST',
+    body: '{}',
+  });
+}
+
+export async function markInteractionArchived(id: string) {
+  return apiRequest<{ detail: string; interaction: InteractionItem }>(`/interactions/${id}/archive/`, {
+    method: 'POST',
+    body: '{}',
+  });
 }
