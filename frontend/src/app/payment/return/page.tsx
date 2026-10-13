@@ -108,53 +108,31 @@ function PaymentReturnContent() {
                 </div>
               </div>
             ) : verification?.status === 'success' ? (
-              <div className="py-4">
-                <div className="w-16 h-16 rounded-full bg-success/10 border border-success/20 text-success flex items-center justify-center mx-auto mb-4">
-                  <Icon name="check_circle" fill size={36} />
+              <div className="py-6 flex flex-col items-center text-center">
+                <div className="w-20 h-20 rounded-full bg-success/15 border-2 border-success/30 text-success flex items-center justify-center mb-5 shadow-sm">
+                  <Icon name="check" size={38} className="text-success" />
                 </div>
-                <Badge variant="success" className="mb-2 uppercase tracking-widest text-[10px]">
-                  Payment Verified
-                </Badge>
-                <h1 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-dark">
-                  Thank you for your support!
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-dark">
+                  Payment Successful!
                 </h1>
-                <p className="mt-2 text-xs text-secondary-text leading-relaxed">
-                  Your {verification.interaction_type === 'priority_dm' ? 'priority message' : 'tip'} has been verified and securely delivered to{' '}
-                  <strong className="text-dark">@{verification.creator_username}</strong>.
+                <p className="mt-2 text-xs text-secondary-text">
+                  Your payment of <strong className="text-dark font-bold">₦{((verification.amount_kobo || 0) / 100).toLocaleString()}</strong> was successful.
+                </p>
+                <p className="mt-1 text-[11px] font-mono text-secondary-text/80">
+                  Reference: {verification.reference}
                 </p>
 
-                {verification.amount_kobo && (
-                  <div className="mt-5 p-4 bg-background border border-border rounded-2xl text-left text-xs space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-secondary-text">Amount Paid:</span>
-                      <strong className="text-primary font-black text-sm">
-                        ₦{(verification.amount_kobo / 100).toLocaleString()}
-                      </strong>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-secondary-text">Creator:</span>
-                      <span className="font-semibold text-dark">
-                        {verification.creator_name || `@${verification.creator_username}`}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-secondary-text">Reference:</span>
-                      <span className="font-mono text-[11px] text-secondary-text">{verification.reference}</span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="mt-6 flex flex-col gap-2">
+                <div className="mt-8 w-full flex flex-col gap-2.5">
                   {verification.creator_username && (
-                    <Button asChild className="w-full gap-2">
+                    <Button asChild className="w-full h-11 rounded-xl bg-primary hover:bg-primary-hover text-white font-bold text-xs shadow-xs">
                       <Link href={`/${verification.creator_username}`}>
-                        Return to @{verification.creator_username}&apos;s profile <Icon name="north_east" size={16} />
+                        Back to @{verification.creator_username}
                       </Link>
                     </Button>
                   )}
-                  <Button variant="outline" asChild className="w-full gap-2">
+                  <Button variant="outline" asChild className="w-full h-11 rounded-xl border-border text-xs font-bold text-dark">
                     <Link href="/">
-                      <Icon name="arrow_back" size={16} /> Back to Home
+                      Back to Home
                     </Link>
                   </Button>
                 </div>

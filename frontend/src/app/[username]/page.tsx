@@ -172,27 +172,36 @@ export default function CreatorProfilePage() {
 
   if (notFound || !creator) {
     return (
-      <main className="min-h-screen px-5 py-24 flex items-center justify-center bg-background">
-        <Card className="max-w-md w-full p-8 text-center border-border bg-surface shadow-xs">
-          <Badge variant="secondary" className="mb-3">
-            Bio Gatekeeper
-          </Badge>
-          <h1 className="text-2xl font-black text-dark">Creator not found</h1>
-          <p className="mt-2 text-xs text-secondary-text leading-relaxed">
-            The handle @{username} has not been claimed yet.
+      <main className="min-h-screen px-4 py-8 max-w-md mx-auto flex flex-col justify-between bg-background">
+        <header className="flex items-center justify-between">
+          <BrandLogo />
+        </header>
+
+        <div className="flex flex-col items-center text-center my-auto px-4">
+          <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary">
+              <Icon name="sentiment_dissatisfied" size={32} />
+            </div>
+          </div>
+          <h1 className="text-2xl font-black text-dark tracking-tight">Creator not found</h1>
+          <p className="mt-2 text-xs text-secondary-text max-w-xs leading-relaxed">
+            The profile you&apos;re looking for might have been removed or doesn&apos;t exist.
           </p>
-          <div className="mt-6 flex flex-col gap-2.5">
-            <Button asChild className="w-full">
-              <Link href={`/signup?username=${encodeURIComponent(username)}`} className="flex items-center justify-center gap-1.5">
-                <span>Claim @{username}</span>
-                <Icon name="arrow_forward" size={16} />
+          <div className="mt-8 w-full flex flex-col gap-2.5">
+            <Button asChild className="w-full h-11 rounded-xl bg-primary text-white font-bold text-xs hover:bg-primary-hover shadow-xs">
+              <Link href="/">Go Back Home</Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full h-11 rounded-xl border-border text-xs font-bold text-dark">
+              <Link href={`/signup?username=${encodeURIComponent(username)}`}>
+                Claim @{username}
               </Link>
             </Button>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/">Back to Home</Link>
-            </Button>
           </div>
-        </Card>
+        </div>
+
+        <footer className="text-center text-[10px] text-secondary-text/60 py-4">
+          © 2025 Bio Gatekeeper
+        </footer>
       </main>
     );
   }
