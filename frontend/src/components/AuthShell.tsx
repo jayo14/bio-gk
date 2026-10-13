@@ -1,110 +1,84 @@
+'use client';
+
 import Link from 'next/link';
-import type { InputHTMLAttributes, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { BrandLogo } from '@/components/BrandLogo';
 import { Icon } from '@/components/ui/icon';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 export function AuthShell({
-  eyebrow,
   title,
   description,
+  illustration,
+  backHref = '/',
+  centerHeader = false,
   children,
   footer,
+  legalNote,
 }: {
-  eyebrow: string;
   title: string;
   description: string;
+  illustration?: ReactNode;
+  backHref?: string;
+  centerHeader?: boolean;
   children: ReactNode;
-  footer: ReactNode;
+  footer?: ReactNode;
+  legalNote?: ReactNode;
 }) {
   return (
-    <main className="min-h-screen px-4 py-6 sm:px-8 bg-background flex flex-col justify-between">
-      {/* Top Bar */}
-      <div className="max-w-5xl w-full mx-auto flex items-center justify-between pb-4">
-        <BrandLogo />
+    <div className="min-h-screen bg-background flex flex-col justify-between selection:bg-primary/20 selection:text-primary">
+      {/* Top Mobile Bar */}
+      <header className="w-full max-w-md mx-auto px-4 sm:px-6 pt-4 pb-2 flex items-center justify-between">
         <Link
-          href="/"
-          className="text-xs font-bold text-secondary-text hover:text-dark transition flex items-center gap-1.5"
+          href={backHref}
+          className="w-9 h-9 -ml-2 rounded-full flex items-center justify-center text-dark hover:text-primary hover:bg-surface transition"
+          aria-label="Go back"
         >
-          <span>Back to home</span>
-          <Icon name="north_east" size={14} className="text-primary" />
+          <Icon name="arrow_back" size={20} />
         </Link>
-      </div>
+        <BrandLogo />
+        <div className="w-9" aria-hidden="true" />
+      </header>
 
-      {/* Main Container */}
-      <div className="max-w-5xl w-full mx-auto my-4 grid md:grid-cols-12 rounded-[2rem] border border-border overflow-hidden bg-surface shadow-xs">
-        {/* Left Side: Brand Story Banner */}
-        <aside className="md:col-span-5 bg-dark text-white p-8 sm:p-12 flex flex-col justify-between relative overflow-hidden">
-          <div className="relative z-10">
-            <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary-foreground bg-primary/20 border border-primary/30 px-3 py-1 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-              Creator-First Gateway
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black mt-6 tracking-tight leading-tight text-white">
-              Your attention.<br />
-              <span className="text-primary-foreground/90 font-serif italic">Your rules.</span>
-            </h2>
-            <p className="mt-4 text-xs text-white/70 leading-relaxed max-w-xs">
-              One transparent link for supporters who want to reach you with intention. No extra apps. No spam. Direct payouts to your bank.
-            </p>
+      {/* Main Form Container */}
+      <main className="w-full max-w-md mx-auto px-5 sm:px-6 py-6 flex-1 flex flex-col justify-center">
+        {illustration && (
+          <div className="flex justify-center mb-6">
+            {illustration}
           </div>
+        )}
 
-          <div className="mt-12 pt-6 border-t border-white/10 relative z-10 text-[11px] text-white/60">
-            Built for Nigerian creators, influencers & builders.
+        {/* Header */}
+        <div className={`mb-6 ${centerHeader ? 'text-center' : 'text-left'}`}>
+          <h1 className="text-2xl font-black text-dark tracking-tight leading-tight">
+            {title}
+          </h1>
+          <p className="text-xs text-secondary-text mt-1.5 leading-relaxed">
+            {description}
+          </p>
+        </div>
+
+        {/* Form Body */}
+        {children}
+
+        {/* Footer */}
+        {footer && (
+          <div className="mt-6 text-center text-xs text-secondary-text">
+            {footer}
           </div>
+        )}
 
-          {/* Subtle geometric circles */}
-          <div className="absolute -right-20 -bottom-20 w-64 h-64 rounded-full border border-white/5 pointer-events-none" />
-          <div className="absolute -right-10 -bottom-10 w-44 h-44 rounded-full bg-primary/10 pointer-events-none" />
-        </aside>
-
-        {/* Right Side: Auth Form */}
-        <section className="md:col-span-7 p-6 sm:p-12 flex flex-col justify-center">
-          <div className="max-w-md w-full mx-auto">
-            <div className="mb-6">
-              <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1.5">
-                {eyebrow}
-              </p>
-              <h1 className="text-2xl sm:text-3xl font-black text-dark tracking-tight">
-                {title}
-              </h1>
-              <p className="text-xs text-secondary-text mt-1.5 leading-relaxed">
-                {description}
-              </p>
-            </div>
-
-            {children}
-
-            <div className="mt-6 pt-5 border-t border-border text-center text-xs text-secondary-text">
-              {footer}
-            </div>
-
-            <p className="mt-5 text-center text-[10px] text-secondary-text/70">
-              By continuing, you agree to our Terms and Privacy Policy.
-            </p>
+        {/* Legal Disclaimer */}
+        {legalNote && (
+          <div className="mt-5 text-center text-[10px] text-secondary-text/80 leading-relaxed">
+            {legalNote}
           </div>
-        </section>
-      </div>
+        )}
+      </main>
 
-      <div className="max-w-5xl w-full mx-auto py-2 text-center text-[11px] text-secondary-text">
-        Bio Gatekeeper · The creator gateway
-      </div>
-    </main>
-  );
-}
-
-export function AuthInput({
-  label,
-  id,
-  className,
-  ...props
-}: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
-  const inputId = id || props.name;
-  return (
-    <div className="space-y-1.5">
-      <Label htmlFor={inputId}>{label}</Label>
-      <Input id={inputId} className={className} {...props} />
+      {/* Subtle bottom spacing/watermark */}
+      <footer className="w-full max-w-md mx-auto py-4 text-center text-[10px] text-secondary-text/60">
+        © 2025 Bio Gatekeeper · Protected & Secured
+      </footer>
     </div>
   );
 }
