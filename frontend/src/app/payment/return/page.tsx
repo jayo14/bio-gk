@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import { CheckCircle2, XCircle, Clock, RefreshCw, ArrowLeft, ArrowUpRight } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 type PaymentVerification = {
   status: 'success' | 'pending' | 'failed' | 'abandoned';
@@ -51,131 +55,136 @@ function PaymentReturnContent() {
   }, [reference]);
 
   return (
-    <main className="min-h-screen px-4 py-16 sm:py-24 max-w-md mx-auto">
-      {/* Top Header */}
-      <header className="text-center mb-8">
-        <Link href="/" className="text-2xl font-black tracking-tight">
-          gate<span className="text-[#7c351c]">.</span>
-        </Link>
-      </header>
+    <main className="min-h-screen px-4 py-16 sm:py-24 max-w-md mx-auto bg-background flex flex-col justify-between">
+      <div>
+        {/* Top Header */}
+        <header className="text-center mb-8">
+          <Link href="/" className="text-2xl font-black tracking-tight text-dark">
+            gate<span className="text-primary">.</span>
+          </Link>
+        </header>
 
-      <section className="bg-white border border-[#e6dfd5] rounded-[2rem] p-6 sm:p-8 text-center shadow-sm">
-        {loading ? (
-          <div className="py-8">
-            <div className="w-12 h-12 border-4 border-[#7c351c] border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="mt-5 text-base font-bold text-[#201c18]">Verifying your transaction…</p>
-            <p className="mt-1 text-xs text-[#777067] leading-relaxed">
-              Contacting Paystack to verify settlement. Please hold on.
-            </p>
-          </div>
-        ) : error ? (
-          <div className="py-6">
-            <div className="w-12 h-12 rounded-full bg-[#fff0ed] text-[#9a2c1b] text-xl font-black flex items-center justify-center mx-auto mb-4">
-              ✕
-            </div>
-            <h1 className="text-2xl font-black text-[#201c18]">Verification Error</h1>
-            <p className="mt-2 text-xs text-[#9a2c1b]">{error}</p>
-            <div className="mt-6 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => checkStatus(reference)}
-                className="py-3 px-5 bg-[#7c351c] text-white text-xs font-bold rounded-full hover:bg-[#632814] transition cursor-pointer"
-              >
-                Retry verification ↻
-              </button>
-              <Link
-                href="/"
-                className="py-3 px-5 border border-[#d8cec1] text-xs font-bold rounded-full hover:bg-[#f3eee6] transition"
-              >
-                Back to Home
-              </Link>
-            </div>
-          </div>
-        ) : verification?.status === 'success' ? (
-          <div className="py-4">
-            <div className="w-16 h-16 rounded-full bg-[#edf7ed] border border-[#cce6cd] text-[#285c2b] text-3xl font-black flex items-center justify-center mx-auto mb-4">
-              ✓
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#285c2b]">Payment Verified</p>
-            <h1 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-[#201c18]">
-              Thank you for your support!
-            </h1>
-            <p className="mt-2 text-xs text-[#777067] leading-relaxed">
-              Your {verification.interaction_type === 'priority_dm' ? 'priority message' : 'tip'} has been verified and securely delivered to{' '}
-              <strong className="text-[#201c18]">@{verification.creator_username}</strong>.
-            </p>
+        <Card className="p-6 sm:p-8 text-center shadow-xs border-border bg-surface rounded-[2rem]">
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="py-8">
+                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p className="mt-5 text-base font-bold text-dark">Verifying your transaction…</p>
+                <p className="mt-1 text-xs text-secondary-text leading-relaxed">
+                  Contacting Paystack to verify settlement. Please hold on.
+                </p>
+              </div>
+            ) : error ? (
+              <div className="py-4">
+                <div className="w-14 h-14 rounded-full bg-error/10 border border-error/20 text-error flex items-center justify-center mx-auto mb-4">
+                  <XCircle className="w-8 h-8" />
+                </div>
+                <Badge variant="error" className="mb-2 uppercase tracking-widest text-[10px]">
+                  Verification Error
+                </Badge>
+                <h1 className="mt-1 text-2xl font-black text-dark">Unable to Verify</h1>
+                <p className="mt-2 text-xs text-error leading-relaxed">{error}</p>
+                <div className="mt-6 flex flex-col gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => checkStatus(reference)}
+                    className="w-full gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" /> Retry verification
+                  </Button>
+                  <Button variant="outline" asChild className="w-full gap-2">
+                    <Link href="/">
+                      <ArrowLeft className="w-4 h-4" /> Back to Home
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            ) : verification?.status === 'success' ? (
+              <div className="py-4">
+                <div className="w-16 h-16 rounded-full bg-success/10 border border-success/20 text-success flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="w-9 h-9" />
+                </div>
+                <Badge variant="success" className="mb-2 uppercase tracking-widest text-[10px]">
+                  Payment Verified
+                </Badge>
+                <h1 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-dark">
+                  Thank you for your support!
+                </h1>
+                <p className="mt-2 text-xs text-secondary-text leading-relaxed">
+                  Your {verification.interaction_type === 'priority_dm' ? 'priority message' : 'tip'} has been verified and securely delivered to{' '}
+                  <strong className="text-dark">@{verification.creator_username}</strong>.
+                </p>
 
-            {verification.amount_kobo && (
-              <div className="mt-5 p-4 bg-[#f8f5ef] border border-[#e6dfd5] rounded-2xl text-left text-xs space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-[#777067]">Amount Paid:</span>
-                  <strong className="text-[#7c351c] font-black">
-                    ₦{(verification.amount_kobo / 100).toLocaleString()}
-                  </strong>
+                {verification.amount_kobo && (
+                  <div className="mt-5 p-4 bg-background border border-border rounded-2xl text-left text-xs space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-secondary-text">Amount Paid:</span>
+                      <strong className="text-primary font-black text-sm">
+                        ₦{(verification.amount_kobo / 100).toLocaleString()}
+                      </strong>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-secondary-text">Creator:</span>
+                      <span className="font-semibold text-dark">
+                        {verification.creator_name || `@${verification.creator_username}`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-secondary-text">Reference:</span>
+                      <span className="font-mono text-[11px] text-secondary-text">{verification.reference}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-6 flex flex-col gap-2">
+                  {verification.creator_username && (
+                    <Button asChild className="w-full gap-2">
+                      <Link href={`/${verification.creator_username}`}>
+                        Return to @{verification.creator_username}&apos;s profile <ArrowUpRight className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                  )}
+                  <Button variant="outline" asChild className="w-full gap-2">
+                    <Link href="/">
+                      <ArrowLeft className="w-4 h-4" /> Back to Home
+                    </Link>
+                  </Button>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[#777067]">Creator:</span>
-                  <span className="font-semibold text-[#201c18]">
-                    {verification.creator_name || `@${verification.creator_username}`}
-                  </span>
+              </div>
+            ) : (
+              <div className="py-4">
+                <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center mx-auto mb-4">
+                  <Clock className="w-8 h-8" />
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[#777067]">Reference:</span>
-                  <span className="font-mono text-[11px] text-[#777067]">{verification.reference}</span>
+                <Badge variant="secondary" className="mb-2 uppercase tracking-widest text-[10px]">
+                  Status: {verification?.status || 'Pending'}
+                </Badge>
+                <h1 className="mt-1 text-2xl font-black text-dark">Payment Not Completed</h1>
+                <p className="mt-2 text-xs text-secondary-text leading-relaxed">
+                  We did not receive a completed payment confirmation from Paystack for this transaction.
+                </p>
+
+                <div className="mt-6 flex flex-col gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => checkStatus(reference)}
+                    className="w-full gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" /> Re-check payment status
+                  </Button>
+                  <Button variant="outline" asChild className="w-full gap-2">
+                    <Link href="/">
+                      <ArrowLeft className="w-4 h-4" /> Back to Home
+                    </Link>
+                  </Button>
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+      </div>
 
-            <div className="mt-6 flex flex-col gap-2">
-              {verification.creator_username && (
-                <Link
-                  href={`/${verification.creator_username}`}
-                  className="py-3 px-5 bg-[#7c351c] text-white text-xs font-bold rounded-full hover:bg-[#632814] transition"
-                >
-                  Return to @{verification.creator_username}&apos;s profile ↗
-                </Link>
-              )}
-              <Link
-                href="/"
-                className="py-3 px-5 border border-[#d8cec1] text-xs font-bold rounded-full hover:bg-[#f3eee6] transition"
-              >
-                Back to Home
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div className="py-4">
-            <div className="w-14 h-14 rounded-full bg-[#fff8eb] border border-[#f3dfbd] text-[#96631b] text-2xl font-black flex items-center justify-center mx-auto mb-4">
-              ⏳
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#96631b]">
-              Status: {verification?.status || 'Pending'}
-            </p>
-            <h1 className="mt-1 text-2xl font-black text-[#201c18]">Payment Not Completed</h1>
-            <p className="mt-2 text-xs text-[#777067] leading-relaxed">
-              We did not receive a completed payment confirmation from Paystack for this transaction.
-            </p>
-
-            <div className="mt-6 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => checkStatus(reference)}
-                className="py-3 px-5 bg-[#7c351c] text-white text-xs font-bold rounded-full hover:bg-[#632814] transition cursor-pointer"
-              >
-                Re-check payment status ↻
-              </button>
-              <Link
-                href="/"
-                className="py-3 px-5 border border-[#d8cec1] text-xs font-bold rounded-full hover:bg-[#f3eee6] transition"
-              >
-                Back to Home
-              </Link>
-            </div>
-          </div>
-        )}
-      </section>
-
-      <p className="mt-6 text-center text-[11px] text-[#777067]">
+      <p className="mt-8 text-center text-[11px] text-secondary-text">
         A browser redirect does not verify payment. All interactions are verified against Paystack servers.
       </p>
     </main>
@@ -186,8 +195,8 @@ export default function PaymentReturnPage() {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen px-4 py-24 flex items-center justify-center">
-          <p className="text-xs font-bold text-[#777067]">Loading payment verification…</p>
+        <main className="min-h-screen px-4 py-24 flex items-center justify-center bg-background">
+          <p className="text-xs font-bold text-secondary-text">Loading payment verification…</p>
         </main>
       }
     >

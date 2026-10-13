@@ -19,6 +19,12 @@ import {
   markInteractionRead,
   changePassword,
 } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 type Tab = 'overview' | 'inbox' | 'profile' | 'payouts' | 'security';
 
@@ -174,7 +180,6 @@ export default function DashboardPage() {
         account_number: accountNumber,
       });
       setBankMsg({ text: 'Paystack subaccount successfully linked! Payouts are now active.', type: 'success' });
-      // Refresh dashboard metrics
       const updated = await getCreatorDashboard();
       setDashboardData(updated);
     } catch (err) {
@@ -271,9 +276,9 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen px-4 py-16 flex flex-col items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#7c351c] border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-sm font-semibold text-[#777067]">Loading creator workspace…</p>
+      <main className="min-h-screen px-4 py-16 flex flex-col items-center justify-center bg-background">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-xs font-bold text-secondary-text">Loading creator workspace…</p>
       </main>
     );
   }
@@ -282,61 +287,53 @@ export default function DashboardPage() {
   const metrics = dashboardData?.metrics;
 
   return (
-    <main className="min-h-screen px-4 py-6 sm:px-8 max-w-5xl mx-auto">
+    <main className="min-h-screen px-4 py-6 sm:px-8 max-w-5xl mx-auto bg-background">
       {/* Top Navbar */}
-      <nav className="flex items-center justify-between border-b border-[#e6dfd5] pb-5">
+      <nav className="flex items-center justify-between border-b border-border pb-5">
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-2xl font-black tracking-tight">
-            gate<span className="text-[#7c351c]">.</span>
+          <Link href="/" className="text-2xl font-black tracking-tight text-dark">
+            gate<span className="text-primary">.</span>
           </Link>
-          <span className="hidden sm:inline-block text-xs uppercase tracking-widest font-extrabold text-[#7c351c] bg-[#f8f5ef] px-2.5 py-1 rounded-full border border-[#e6dfd5]">
-            Creator Dashboard
-          </span>
+          <Badge variant="secondary" className="hidden sm:inline-flex">
+            Creator Workspace
+          </Badge>
         </div>
 
         <div className="flex items-center gap-2.5">
           {creator?.username && (
-            <Link
-              href={`/${creator.username}`}
-              target="_blank"
-              className="text-xs font-bold bg-white border border-[#d8cec1] px-3.5 py-2 rounded-full hover:bg-[#f3eee6] transition inline-flex items-center gap-1"
-            >
-              View page <span aria-hidden="true">↗</span>
-            </Link>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/${creator.username}`} target="_blank">
+                View page <span aria-hidden="true" className="text-primary">↗</span>
+              </Link>
+            </Button>
           )}
-          <button
-            onClick={handleLogout}
-            type="button"
-            className="text-xs font-bold text-[#777067] hover:text-[#201c18] border border-transparent hover:border-[#d8cec1] px-3.5 py-2 rounded-full transition"
-          >
+          <Button onClick={handleLogout} variant="ghost" size="sm">
             Log out
-          </button>
+          </Button>
         </div>
       </nav>
 
       {/* Hero Welcome & Link Sharing */}
-      <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-[#e6dfd5] rounded-3xl p-6 shadow-xs">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-            Welcome, {creator?.display_name || currentUser?.display_name || 'Creator'}.
-          </h1>
-          <p className="text-xs text-[#777067] mt-1">
-            Your public bio link: <strong className="text-[#201c18]">/{creator?.username}</strong>
-          </p>
+      <Card className="mt-6 sm:mt-8 p-6 border-border bg-surface shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-dark">
+              Welcome, {creator?.display_name || currentUser?.display_name || 'Creator'}.
+            </h1>
+            <p className="text-xs text-secondary-text mt-1">
+              Your public bio link: <strong className="text-dark">gate.ng/{creator?.username}</strong>
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleCopyProfileLink} size="sm">
+              {copied ? 'Link Copied ✓' : 'Copy Bio Link ↗'}
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleCopyProfileLink}
-            type="button"
-            className="py-2.5 px-4 bg-[#7c351c] text-white text-xs font-bold rounded-full hover:bg-[#632814] transition cursor-pointer"
-          >
-            {copied ? 'Link Copied ✓' : 'Copy Bio Link ↗'}
-          </button>
-        </div>
-      </div>
+      </Card>
 
       {/* Tabs Navigation */}
-      <div className="mt-6 flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#e6dfd5]">
+      <div className="mt-6 flex items-center gap-2 overflow-x-auto pb-2 border-b border-border">
         {(
           [
             { id: 'overview', label: 'Overview' },
@@ -358,8 +355,8 @@ export default function DashboardPage() {
             type="button"
             className={`py-2 px-4 rounded-full text-xs font-bold transition whitespace-nowrap cursor-pointer ${
               activeTab === tab.id
-                ? 'bg-[#201c18] text-white'
-                : 'text-[#777067] hover:text-[#201c18] hover:bg-white'
+                ? 'bg-dark text-white'
+                : 'text-secondary-text hover:text-dark hover:bg-surface'
             }`}
           >
             {tab.label}
@@ -372,91 +369,79 @@ export default function DashboardPage() {
         <section className="mt-6 space-y-6">
           {/* Subaccount Action Banner if not connected */}
           {creator?.subaccount_status !== 'active' && (
-            <div className="p-4 sm:p-5 bg-[#fff8eb] border border-[#f3dfbd] rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-4 sm:p-5 bg-background border border-primary/20 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
               <div>
-                <p className="text-xs font-black text-[#96631b] uppercase tracking-wider">Payout setup required</p>
-                <p className="text-sm font-semibold text-[#201c18] mt-0.5">
+                <p className="text-xs font-black text-primary uppercase tracking-wider">Payout setup required</p>
+                <p className="text-sm font-semibold text-dark mt-0.5">
                   Connect your Nigerian bank account to start receiving Paystack transfers.
                 </p>
               </div>
-              <button
-                onClick={() => setActiveTab('payouts')}
-                type="button"
-                className="py-2 px-4 bg-[#96631b] text-white text-xs font-bold rounded-full hover:bg-[#7a5015] transition self-start sm:self-auto cursor-pointer"
-              >
+              <Button onClick={() => setActiveTab('payouts')} size="sm">
                 Connect bank ↗
-              </button>
+              </Button>
             </div>
           )}
 
           {/* Revenue & Interaction Metrics */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-white border border-[#e6dfd5] rounded-2xl p-5">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#777067]">Total Earned</p>
-              <p className="text-2xl font-black mt-2 text-[#201c18]">
+            <Card className="p-5 border-border bg-surface">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-secondary-text">Total Earned</p>
+              <p className="text-2xl font-black mt-2 text-dark">
                 ₦{((metrics?.verified_earnings_kobo || 0) / 100).toLocaleString()}
               </p>
-              <p className="text-[10px] text-[#777067] mt-1">Gross verified payments</p>
-            </div>
+              <p className="text-[10px] text-secondary-text mt-1">Gross verified payments</p>
+            </Card>
 
-            <div className="bg-white border border-[#e6dfd5] rounded-2xl p-5">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#777067]">Net Payout</p>
-              <p className="text-2xl font-black mt-2 text-[#285c2b]">
+            <Card className="p-5 border-border bg-surface">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-secondary-text">Net Payout</p>
+              <p className="text-2xl font-black mt-2 text-success">
                 ₦{((metrics?.net_earnings_kobo || 0) / 100).toLocaleString()}
               </p>
-              <p className="text-[10px] text-[#777067] mt-1">Creator allocation (90%)</p>
-            </div>
+              <p className="text-[10px] text-secondary-text mt-1">Creator allocation (90%)</p>
+            </Card>
 
-            <div className="bg-white border border-[#e6dfd5] rounded-2xl p-5">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#777067]">Platform Fee</p>
-              <p className="text-2xl font-black mt-2 text-[#7c351c]">
+            <Card className="p-5 border-border bg-surface">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-secondary-text">Platform Fee</p>
+              <p className="text-2xl font-black mt-2 text-primary">
                 ₦{((metrics?.platform_fees_kobo || 0) / 100).toLocaleString()}
               </p>
-              <p className="text-[10px] text-[#777067] mt-1">Transparent 10% fee</p>
-            </div>
+              <p className="text-[10px] text-secondary-text mt-1">Transparent 10% fee</p>
+            </Card>
 
-            <div className="bg-white border border-[#e6dfd5] rounded-2xl p-5">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#777067]">Interactions</p>
-              <p className="text-2xl font-black mt-2 text-[#201c18]">
+            <Card className="p-5 border-border bg-surface">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-secondary-text">Interactions</p>
+              <p className="text-2xl font-black mt-2 text-dark">
                 {metrics?.total_interactions_count || 0}
               </p>
-              <p className="text-[10px] text-[#777067] mt-1">
+              <p className="text-[10px] text-secondary-text mt-1">
                 {metrics?.unread_messages_count || 0} unread message{metrics?.unread_messages_count === 1 ? '' : 's'}
               </p>
-            </div>
+            </Card>
           </div>
 
           {/* Quick Shortcuts */}
           <div className="grid sm:grid-cols-2 gap-4">
-            <div className="bg-white border border-[#e6dfd5] rounded-3xl p-6">
-              <h3 className="font-black text-lg">Inbox Highlights</h3>
-              <p className="text-xs text-[#777067] mt-1">
+            <Card className="p-6 border-border bg-surface">
+              <h3 className="font-black text-lg text-dark">Inbox Highlights</h3>
+              <p className="text-xs text-secondary-text mt-1">
                 You have {metrics?.unread_messages_count || 0} unread message{metrics?.unread_messages_count === 1 ? '' : 's'}.
               </p>
-              <button
-                onClick={() => setActiveTab('inbox')}
-                type="button"
-                className="mt-4 inline-block py-2.5 px-5 bg-[#201c18] text-white text-xs font-bold rounded-full hover:bg-black transition cursor-pointer"
-              >
+              <Button onClick={() => setActiveTab('inbox')} variant="outline" size="sm" className="mt-4">
                 Go to Inbox ↗
-              </button>
-            </div>
+              </Button>
+            </Card>
 
-            <div className="bg-[#f3eee6] border border-[#e6dfd5] rounded-3xl p-6">
-              <h3 className="font-black text-lg">Payout Status</h3>
-              <p className="text-xs text-[#777067] mt-1">
+            <Card className="p-6 border-border bg-surface">
+              <h3 className="font-black text-lg text-dark">Payout Status</h3>
+              <p className="text-xs text-secondary-text mt-1">
                 {creator?.subaccount_status === 'active'
                   ? `Active on Paystack: ${creator.bank_name} (••••${creator.account_number_last4})`
                   : 'Payout account not connected yet.'}
               </p>
-              <button
-                onClick={() => setActiveTab('payouts')}
-                type="button"
-                className="mt-4 inline-block py-2.5 px-5 border border-[#d8cec1] bg-white text-xs font-bold rounded-full hover:bg-[#faf7f2] transition cursor-pointer"
-              >
+              <Button onClick={() => setActiveTab('payouts')} variant="outline" size="sm" className="mt-4">
                 Manage Bank Details ↗
-              </button>
-            </div>
+              </Button>
+            </Card>
           </div>
         </section>
       )}
@@ -466,18 +451,18 @@ export default function DashboardPage() {
         <section className="mt-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-black">Creator Inbox</h2>
-              <p className="text-xs text-[#777067]">Verified messages and tips from your supporters.</p>
+              <h2 className="text-xl font-black text-dark">Creator Inbox</h2>
+              <p className="text-xs text-secondary-text">Verified messages and tips from your supporters.</p>
             </div>
             {/* Filter buttons */}
-            <div className="flex items-center gap-1 bg-[#f3eee6] p-1 rounded-xl text-xs font-bold">
+            <div className="flex items-center gap-1 bg-surface p-1 rounded-xl border border-border text-xs font-bold">
               {(['all', 'unread', 'read'] as const).map((filter) => (
                 <button
                   key={filter}
                   onClick={() => setInboxFilter(filter)}
                   type="button"
                   className={`px-3 py-1 rounded-lg capitalize transition ${
-                    inboxFilter === filter ? 'bg-white text-[#201c18] shadow-xs' : 'text-[#777067]'
+                    inboxFilter === filter ? 'bg-background text-dark shadow-xs' : 'text-secondary-text'
                   }`}
                 >
                   {filter}
@@ -487,67 +472,64 @@ export default function DashboardPage() {
           </div>
 
           {inboxLoading ? (
-            <div className="py-12 text-center text-sm font-semibold text-[#777067]">Loading inbox messages…</div>
+            <div className="py-12 text-center text-xs font-bold text-secondary-text">Loading inbox messages…</div>
           ) : inboxItems.length === 0 ? (
-            <div className="text-center py-16 bg-white border border-[#e6dfd5] rounded-3xl p-6">
-              <p className="text-sm font-bold text-[#201c18]">No messages found</p>
-              <p className="text-xs text-[#777067] mt-1">
+            <Card className="text-center py-16 p-6 border-border bg-surface">
+              <p className="text-sm font-bold text-dark">No messages found</p>
+              <p className="text-xs text-secondary-text mt-1">
                 When visitors send priority messages or tips on your bio link, they will appear here.
               </p>
-            </div>
+            </Card>
           ) : (
             <div className="space-y-3">
               {inboxItems.map((item) => (
-                <div
+                <Card
                   key={item.id}
-                  className={`bg-white border rounded-2xl p-5 transition ${
+                  className={`p-5 border transition bg-surface ${
                     item.payment_status === 'verified'
-                      ? 'border-[#7c351c] shadow-xs'
-                      : 'border-[#e6dfd5]'
+                      ? 'border-primary ring-1 ring-primary/20'
+                      : 'border-border'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span
-                          className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                            item.interaction_type === 'priority_dm'
-                              ? 'bg-[#7c351c] text-white'
-                              : 'bg-[#285c2b] text-white'
-                          }`}
+                        <Badge
+                          variant={item.interaction_type === 'priority_dm' ? 'default' : 'success'}
+                          className="text-[10px]"
                         >
                           {item.interaction_type === 'priority_dm' ? 'Priority DM' : 'Tip'}
-                        </span>
-                        <h4 className="text-sm font-bold text-[#201c18]">{item.sender_name}</h4>
+                        </Badge>
+                        <h4 className="text-sm font-bold text-dark">{item.sender_name}</h4>
                         {item.payment_status === 'verified' && (
-                          <span className="text-[10px] bg-[#fff0ed] text-[#9a2c1b] px-2 py-0.5 rounded-full font-bold">
+                          <Badge variant="error" className="text-[10px]">
                             New / Unread
-                          </span>
+                          </Badge>
                         )}
                       </div>
                       {item.sender_contact && (
-                        <p className="text-[11px] text-[#777067] mt-0.5">Contact: {item.sender_contact}</p>
+                        <p className="text-[11px] text-secondary-text mt-0.5">Contact: {item.sender_contact}</p>
                       )}
                     </div>
 
                     <div className="text-right shrink-0">
-                      <p className="text-sm font-extrabold text-[#7c351c]">
+                      <p className="text-sm font-extrabold text-primary">
                         ₦{(item.amount_kobo / 100).toLocaleString()}
                       </p>
-                      <p className="text-[10px] text-[#777067] mt-0.5">
+                      <p className="text-[10px] text-secondary-text mt-0.5">
                         {new Date(item.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
 
                   {item.message_body && (
-                    <div className="mt-3.5 p-3.5 bg-[#f8f5ef] border border-[#e6dfd5] rounded-xl text-xs leading-relaxed text-[#201c18] break-words">
+                    <div className="mt-3.5 p-3.5 bg-background border border-border rounded-xl text-xs leading-relaxed text-dark break-words">
                       {item.message_body}
                     </div>
                   )}
 
-                  <div className="mt-3.5 flex items-center justify-between border-t border-[#f3eee6] pt-3 text-[11px]">
-                    <span className="text-[#777067]">
+                  <div className="mt-3.5 flex items-center justify-between border-t border-border/50 pt-3 text-[11px]">
+                    <span className="text-secondary-text">
                       {item.is_public_on_wall ? 'Supporter opted in to Odogwu Wall' : 'Private support'}
                     </span>
                     <div className="flex items-center gap-2">
@@ -555,14 +537,14 @@ export default function DashboardPage() {
                         <button
                           onClick={() => handleMarkRead(item.id)}
                           type="button"
-                          className="font-bold text-[#7c351c] hover:underline cursor-pointer"
+                          className="font-bold text-primary hover:underline cursor-pointer"
                         >
                           Mark as read ✓
                         </button>
                       )}
                     </div>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
           )}
@@ -571,16 +553,16 @@ export default function DashboardPage() {
 
       {/* TAB 3: PROFILE & PRICING */}
       {activeTab === 'profile' && (
-        <section className="mt-6 bg-white border border-[#e6dfd5] rounded-3xl p-6 sm:p-8">
-          <h2 className="text-xl font-black">Profile & Pricing Settings</h2>
-          <p className="text-xs text-[#777067] mt-1">Configure what visitors see when they open your bio link.</p>
+        <Card className="mt-6 p-6 sm:p-8 border-border bg-surface">
+          <h2 className="text-xl font-black text-dark">Profile & Pricing Settings</h2>
+          <p className="text-xs text-secondary-text mt-1">Configure what visitors see when they open your bio link.</p>
 
           {profileMsg && (
             <div
               className={`mt-4 p-3 rounded-xl text-xs font-semibold ${
                 profileMsg.type === 'success'
-                  ? 'bg-[#edf7ed] border border-[#cce6cd] text-[#285c2b]'
-                  : 'bg-[#fff0ed] border border-[#f3c7bd] text-[#9a2c1b]'
+                  ? 'bg-success/10 border border-success/20 text-success'
+                  : 'bg-error/10 border border-error/20 text-error'
               }`}
             >
               {profileMsg.text}
@@ -588,94 +570,91 @@ export default function DashboardPage() {
           )}
 
           <form onSubmit={handleSaveProfile} className="mt-6 space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-[#201c18] mb-1">Display Name</label>
-              <input
+            <div className="space-y-1.5">
+              <Label htmlFor="display_name">Display Name</Label>
+              <Input
+                id="display_name"
                 type="text"
                 required
                 maxLength={80}
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full text-sm p-3 border border-[#e6dfd5] rounded-xl bg-white focus:outline-none focus:border-[#7c351c]"
               />
             </div>
 
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-xs font-bold text-[#201c18]">Bio Description</label>
-                <span className="text-[11px] text-[#777067]">{bioText.length}/300</span>
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="bio_text">Bio Description</Label>
+                <span className="text-[10px] text-secondary-text">{bioText.length}/300</span>
               </div>
-              <textarea
+              <Textarea
+                id="bio_text"
                 rows={3}
                 maxLength={300}
                 value={bioText}
                 onChange={(e) => setBioText(e.target.value)}
-                placeholder="Tell your supporters about yourself and what you create…"
-                className="w-full text-sm p-3 border border-[#e6dfd5] rounded-xl bg-white focus:outline-none focus:border-[#7c351c] resize-none"
-              ></textarea>
+                placeholder="Tell your supporters about yourself…"
+              />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-[#201c18] mb-1">Avatar Image URL</label>
-              <input
+            <div className="space-y-1.5">
+              <Label htmlFor="avatar_url">Avatar Image URL</Label>
+              <Input
+                id="avatar_url"
                 type="url"
                 placeholder="https://example.com/avatar.jpg"
                 value={avatarUrl}
                 onChange={(e) => setAvatarUrl(e.target.value)}
-                className="w-full text-sm p-3 border border-[#e6dfd5] rounded-xl bg-white focus:outline-none focus:border-[#7c351c]"
               />
-              <span className="text-[11px] text-[#777067] mt-1 block">Optional: Leave empty to display initials monogram.</span>
+              <span className="text-[10px] text-secondary-text block">Optional: Leave empty to display initials monogram.</span>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4 pt-2 border-t border-[#f3eee6]">
-              <div>
-                <label className="block text-xs font-bold text-[#201c18] mb-1">
-                  Priority Message Rate (₦)
-                </label>
-                <input
+            <div className="grid sm:grid-cols-2 gap-4 pt-2 border-t border-border/60">
+              <div className="space-y-1.5">
+                <Label htmlFor="min_fee">Priority Message Rate (₦)</Label>
+                <Input
+                  id="min_fee"
                   type="number"
                   min="500"
                   max="100000"
                   step="100"
                   value={minFeeNaira}
                   onChange={(e) => setMinFeeNaira(Number(e.target.value))}
-                  className="w-full text-sm p-3 border border-[#e6dfd5] rounded-xl bg-white focus:outline-none focus:border-[#7c351c]"
                 />
-                <span className="text-[11px] text-[#777067] mt-1 block">Minimum rate to send you a priority message.</span>
+                <span className="text-[10px] text-secondary-text block">Minimum rate to send you a priority message.</span>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-[#201c18] mb-1">
-                  Tip Preset Buttons (₦, comma-separated)
-                </label>
-                <input
+              <div className="space-y-1.5">
+                <Label htmlFor="presets">Tip Preset Buttons (₦, comma-separated)</Label>
+                <Input
+                  id="presets"
                   type="text"
                   value={tipPresetsNaira}
                   onChange={(e) => setTipPresetsNaira(e.target.value)}
                   placeholder="2000, 5000, 10000"
-                  className="w-full text-sm p-3 border border-[#e6dfd5] rounded-xl bg-white focus:outline-none focus:border-[#7c351c]"
                 />
-                <span className="text-[11px] text-[#777067] mt-1 block">Presets shown to visitors for fast tips.</span>
+                <span className="text-[10px] text-secondary-text block">Presets shown to visitors for fast tips.</span>
               </div>
             </div>
 
-            <div className="pt-2 border-t border-[#f3eee6] space-y-3">
-              <label className="flex items-center gap-2 cursor-pointer">
+            <div className="pt-2 border-t border-border/60 space-y-3">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={publicWallEnabled}
                   onChange={(e) => setPublicWallEnabled(e.target.checked)}
-                  className="rounded text-[#7c351c] focus:ring-[#7c351c]"
+                  className="rounded text-primary focus:ring-primary accent-primary"
                 />
-                <span className="text-xs font-bold text-[#201c18]">Enable Public Odogwu Supporter Wall</span>
+                <span className="text-xs font-bold text-dark">Enable Public Odogwu Supporter Wall</span>
               </label>
 
-              <div>
-                <label className="block text-xs font-bold text-[#201c18] mb-1">Default Leaderboard Period</label>
+              <div className="space-y-1.5">
+                <Label htmlFor="lb_period">Default Leaderboard Period</Label>
                 <select
+                  id="lb_period"
                   value={leaderboardPeriod}
                   onChange={(e) => setLeaderboardPeriod(e.target.value as 'weekly' | 'monthly' | 'all_time')}
-                  className="w-full sm:w-60 text-xs p-2.5 border border-[#e6dfd5] rounded-xl bg-white focus:outline-none focus:border-[#7c351c]"
+                  className="w-full sm:w-60 text-xs h-10 px-3 border border-border rounded-xl bg-surface text-dark focus:outline-none focus:border-primary"
                 >
                   <option value="weekly">Weekly</option>
                   <option value="monthly">Monthly</option>
@@ -684,85 +663,75 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-[#f3eee6] space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-wider text-[#7c351c]">Notification Preferences</h4>
-              <label className="flex items-center gap-2 cursor-pointer">
+            <div className="pt-2 border-t border-border/60 space-y-3">
+              <h4 className="text-xs font-black uppercase tracking-wider text-primary">Notification Preferences</h4>
+              <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={notifyEmail}
                   onChange={(e) => setNotifyEmail(e.target.checked)}
-                  className="rounded text-[#7c351c] focus:ring-[#7c351c]"
+                  className="rounded text-primary focus:ring-primary accent-primary"
                 />
-                <span className="text-xs text-[#201c18]">Send email notifications for new paid interactions</span>
+                <span className="text-xs text-dark">Send email notifications for new paid interactions</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={notifyWhatsapp}
                   onChange={(e) => setNotifyWhatsapp(e.target.checked)}
-                  className="rounded text-[#7c351c] focus:ring-[#7c351c]"
+                  className="rounded text-primary focus:ring-primary accent-primary"
                 />
-                <span className="text-xs text-[#201c18]">Send WhatsApp notifications (Cloud API)</span>
+                <span className="text-xs text-dark">Send WhatsApp notifications (Cloud API)</span>
               </label>
 
               {notifyWhatsapp && (
-                <div>
-                  <label className="block text-xs font-bold text-[#201c18] mb-1">WhatsApp Phone Number</label>
-                  <input
+                <div className="space-y-1.5">
+                  <Label htmlFor="whatsapp_phone">WhatsApp Phone Number</Label>
+                  <Input
+                    id="whatsapp_phone"
                     type="text"
                     placeholder="e.g. +2348012345678"
                     value={whatsappPhone}
                     onChange={(e) => setWhatsappPhone(e.target.value)}
-                    className="w-full text-sm p-3 border border-[#e6dfd5] rounded-xl bg-white focus:outline-none focus:border-[#7c351c]"
                   />
                 </div>
               )}
             </div>
 
-            <button
-              type="submit"
-              disabled={profileSaving}
-              className="mt-4 py-3 px-6 bg-[#7c351c] text-white text-xs font-bold rounded-full hover:bg-[#632814] transition cursor-pointer disabled:opacity-50"
-            >
+            <Button type="submit" disabled={profileSaving} className="mt-4">
               {profileSaving ? 'Saving Changes…' : 'Save Profile Changes ↗'}
-            </button>
+            </Button>
           </form>
-        </section>
+        </Card>
       )}
 
       {/* TAB 4: BANK PAYOUTS */}
       {activeTab === 'payouts' && (
-        <section className="mt-6 bg-white border border-[#e6dfd5] rounded-3xl p-6 sm:p-8">
+        <Card className="mt-6 p-6 sm:p-8 border-border bg-surface">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-black">Bank Payout Settings</h2>
-              <p className="text-xs text-[#777067] mt-1">
+              <h2 className="text-xl font-black text-dark">Bank Payout Settings</h2>
+              <p className="text-xs text-secondary-text mt-1">
                 Link your Nigerian bank account through Paystack Subaccounts to receive automatic splits.
               </p>
             </div>
-            <span
-              className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider ${
-                creator?.subaccount_status === 'active'
-                  ? 'bg-[#edf7ed] text-[#285c2b] border border-[#cce6cd]'
-                  : 'bg-[#fff0ed] text-[#9a2c1b] border border-[#f3c7bd]'
-              }`}
-            >
+            <Badge variant={creator?.subaccount_status === 'active' ? 'success' : 'error'}>
               {creator?.subaccount_status === 'active' ? 'Active' : 'Unconnected'}
-            </span>
+            </Badge>
           </div>
 
           {creator?.subaccount_status === 'active' && (
-            <div className="mt-5 p-4 bg-[#f8f5ef] border border-[#e6dfd5] rounded-2xl">
-              <p className="text-xs font-bold text-[#777067] uppercase tracking-wider">Connected Bank Account</p>
+            <div className="mt-5 p-4 bg-background border border-border rounded-2xl">
+              <p className="text-[10px] font-bold text-secondary-text uppercase tracking-wider">Connected Bank Account</p>
               <div className="mt-2 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-bold text-[#201c18]">{creator.account_name}</p>
-                  <p className="text-xs text-[#777067] mt-0.5">
+                  <p className="text-sm font-bold text-dark">{creator.account_name}</p>
+                  <p className="text-xs text-secondary-text mt-0.5">
                     {creator.bank_name} · Account ending in ••••{creator.account_number_last4}
                   </p>
                 </div>
-                <span className="text-xs text-[#285c2b] font-bold">Verified ✓</span>
+                <Badge variant="success">Verified ✓</Badge>
               </div>
             </div>
           )}
@@ -771,8 +740,8 @@ export default function DashboardPage() {
             <div
               className={`mt-4 p-3 rounded-xl text-xs font-semibold ${
                 bankMsg.type === 'success'
-                  ? 'bg-[#edf7ed] border border-[#cce6cd] text-[#285c2b]'
-                  : 'bg-[#fff0ed] border border-[#f3c7bd] text-[#9a2c1b]'
+                  ? 'bg-success/10 border border-success/20 text-success'
+                  : 'bg-error/10 border border-error/20 text-error'
               }`}
             >
               {bankMsg.text}
@@ -780,16 +749,17 @@ export default function DashboardPage() {
           )}
 
           <form onSubmit={handleConnectBank} className="mt-6 space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-[#201c18] mb-1">Select Nigerian Bank</label>
+            <div className="space-y-1.5">
+              <Label htmlFor="bank_select">Select Nigerian Bank</Label>
               <select
+                id="bank_select"
                 required
                 value={selectedBankCode}
                 onChange={(e) => {
                   setSelectedBankCode(e.target.value);
                   setResolvedAccountName('');
                 }}
-                className="w-full text-sm p-3 border border-[#e6dfd5] rounded-xl bg-white focus:outline-none focus:border-[#7c351c]"
+                className="w-full text-sm h-11 px-4 border border-border rounded-xl bg-surface text-dark focus:outline-none focus:border-primary"
               >
                 <option value="">-- Choose a Bank --</option>
                 {banks.map((b) => (
@@ -800,10 +770,11 @@ export default function DashboardPage() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-[#201c18] mb-1">10-Digit NUBAN Account Number</label>
+            <div className="space-y-1.5">
+              <Label htmlFor="account_num">10-Digit NUBAN Account Number</Label>
               <div className="flex gap-2">
-                <input
+                <Input
+                  id="account_num"
                   type="text"
                   required
                   maxLength={10}
@@ -814,54 +785,53 @@ export default function DashboardPage() {
                     setAccountNumber(e.target.value.replace(/\D/g, ''));
                     setResolvedAccountName('');
                   }}
-                  className="flex-1 text-sm p-3 border border-[#e6dfd5] rounded-xl bg-white focus:outline-none focus:border-[#7c351c]"
+                  className="flex-1"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={handleResolveAccount}
                   disabled={resolvingBank || accountNumber.length !== 10 || !selectedBankCode}
-                  className="px-4 py-2.5 bg-white border border-[#d8cec1] text-xs font-bold rounded-xl hover:bg-[#f3eee6] transition disabled:opacity-50 cursor-pointer"
                 >
                   {resolvingBank ? 'Verifying…' : 'Verify Name'}
-                </button>
+                </Button>
               </div>
             </div>
 
             {resolvedAccountName && (
-              <div className="p-3 bg-[#edf7ed] border border-[#cce6cd] text-[#285c2b] text-xs rounded-xl font-bold">
+              <div className="p-3 bg-success/10 border border-success/20 text-success text-xs rounded-xl font-bold">
                 Account Holder: {resolvedAccountName}
               </div>
             )}
 
-            <button
+            <Button
               type="submit"
               disabled={connectingBank || !selectedBankCode || accountNumber.length !== 10}
-              className="py-3 px-6 bg-[#7c351c] text-white text-xs font-bold rounded-full hover:bg-[#632814] transition cursor-pointer disabled:opacity-50"
             >
               {connectingBank ? 'Connecting with Paystack…' : 'Save & Connect Subaccount ↗'}
-            </button>
+            </Button>
           </form>
 
-          <div className="mt-8 pt-5 border-t border-[#e6dfd5] text-xs text-[#777067] leading-relaxed">
+          <div className="mt-8 pt-5 border-t border-border text-xs text-secondary-text leading-relaxed">
             <p>
               💡 <strong>How Paystack Subaccounts work:</strong> When a supporter pays you, Paystack automatically splits 90% of the payment directly into your bank subaccount and 10% platform fee to Bio Gatekeeper. Settlements are governed by standard Paystack terms.
             </p>
           </div>
-        </section>
+        </Card>
       )}
 
       {/* TAB 5: SECURITY */}
       {activeTab === 'security' && (
-        <section className="mt-6 bg-white border border-[#e6dfd5] rounded-3xl p-6 sm:p-8">
-          <h2 className="text-xl font-black">Security & Password</h2>
-          <p className="text-xs text-[#777067] mt-1">Change your password and manage account security.</p>
+        <Card className="mt-6 p-6 sm:p-8 border-border bg-surface">
+          <h2 className="text-xl font-black text-dark">Security & Password</h2>
+          <p className="text-xs text-secondary-text mt-1">Change your password and manage account security.</p>
 
           {passwordMsg && (
             <div
               className={`mt-4 p-3 rounded-xl text-xs font-semibold ${
                 passwordMsg.type === 'success'
-                  ? 'bg-[#edf7ed] border border-[#cce6cd] text-[#285c2b]'
-                  : 'bg-[#fff0ed] border border-[#f3c7bd] text-[#9a2c1b]'
+                  ? 'bg-success/10 border border-success/20 text-success'
+                  : 'bg-error/10 border border-error/20 text-error'
               }`}
             >
               {passwordMsg.text}
@@ -869,51 +839,46 @@ export default function DashboardPage() {
           )}
 
           <form onSubmit={handleChangePassword} className="mt-6 max-w-md space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-[#201c18] mb-1">Current Password</label>
-              <input
+            <div className="space-y-1.5">
+              <Label htmlFor="curr_pass">Current Password</Label>
+              <Input
+                id="curr_pass"
                 type="password"
                 required
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full text-sm p-3 border border-[#e6dfd5] rounded-xl bg-white focus:outline-none focus:border-[#7c351c]"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-[#201c18] mb-1">New Password</label>
-              <input
+            <div className="space-y-1.5">
+              <Label htmlFor="new_pass">New Password (at least 8 characters)</Label>
+              <Input
+                id="new_pass"
                 type="password"
                 required
                 minLength={8}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full text-sm p-3 border border-[#e6dfd5] rounded-xl bg-white focus:outline-none focus:border-[#7c351c]"
               />
-              <span className="text-[11px] text-[#777067] mt-1 block">Must be at least 8 characters.</span>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-[#201c18] mb-1">Confirm New Password</label>
-              <input
+            <div className="space-y-1.5">
+              <Label htmlFor="confirm_pass">Confirm New Password</Label>
+              <Input
+                id="confirm_pass"
                 type="password"
                 required
                 minLength={8}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full text-sm p-3 border border-[#e6dfd5] rounded-xl bg-white focus:outline-none focus:border-[#7c351c]"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={passwordSaving}
-              className="py-3 px-6 bg-[#7c351c] text-white text-xs font-bold rounded-full hover:bg-[#632814] transition cursor-pointer disabled:opacity-50"
-            >
+            <Button type="submit" disabled={passwordSaving}>
               {passwordSaving ? 'Updating Password…' : 'Update Password ↗'}
-            </button>
+            </Button>
           </form>
-        </section>
+        </Card>
       )}
     </main>
   );
