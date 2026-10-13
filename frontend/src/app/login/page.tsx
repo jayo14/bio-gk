@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { login } from '@/lib/api';
 import { AuthShell } from '@/components/AuthShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { login } from '@/lib/api';
+import { Icon } from '@/components/ui/icon';
+import { toast } from '@/components/ui/sonner';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,19 +19,23 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError('');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+    setError('');
+
     try {
       await login({ email: email.trim(), password });
+      toast.success('Welcome back! Signed in successfully.');
       router.push('/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to sign in. Please try again.');
+      const msg = err instanceof Error ? err.message : 'Invalid credentials. Please try again.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <AuthShell
@@ -38,9 +44,9 @@ export default function LoginPage() {
       description="Sign in to manage your creator page, inbox, and Paystack payouts."
       footer={
         <>
-          New to Gate?{' '}
-          <Link href="/signup" className="text-primary font-bold hover:underline">
-            Create an account ↗
+          New to Bio Gatekeeper?{' '}
+          <Link href="/signup" className="text-primary font-bold hover:underline inline-flex items-center gap-0.5">
+            Create an account <Icon name="north_east" size={13} />
           </Link>
         </>
       }
@@ -82,21 +88,28 @@ export default function LoginPage() {
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pr-16"
+              className="pr-12"
               required
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-secondary-text hover:text-dark transition"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-text hover:text-dark transition p-1"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-              {showPassword ? 'Hide' : 'Show'}
+              <Icon name={showPassword ? 'visibility_off' : 'visibility'} size={18} />
             </button>
           </div>
         </div>
 
         <Button type="submit" disabled={loading} className="w-full mt-2">
-          {loading ? 'Signing you in…' : 'Sign in ↗'}
+          {loading ? (
+            'Signing you in…'
+          ) : (
+            <span className="flex items-center justify-center gap-1.5">
+              Sign in <Icon name="arrow_forward" size={16} />
+            </span>
+          )}
         </Button>
       </form>
     </AuthShell>

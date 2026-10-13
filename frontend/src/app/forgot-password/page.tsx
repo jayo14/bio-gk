@@ -6,6 +6,8 @@ import { AuthShell } from '@/components/AuthShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Icon } from '@/components/ui/icon';
+import { toast } from '@/components/ui/sonner';
 import { apiRequest } from '@/lib/api';
 
 type ForgotResponse = { detail: string; development_reset_url?: string };
@@ -28,8 +30,11 @@ export default function ForgotPasswordPage() {
       });
       setSent(true);
       setDevUrl(result.development_reset_url || '');
+      toast.success('Reset instructions prepared. Check your email or next step.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not process your request. Please try again.');
+      const msg = err instanceof Error ? err.message : 'Could not process your request. Please try again.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -47,8 +52,8 @@ export default function ForgotPasswordPage() {
       footer={
         <>
           Remembered it?{' '}
-          <Link href="/login" className="text-primary font-bold hover:underline">
-            Back to login ↗
+          <Link href="/login" className="text-primary font-bold hover:underline inline-flex items-center gap-0.5">
+            Back to login <Icon name="north_east" size={13} />
           </Link>
         </>
       }
@@ -76,7 +81,13 @@ export default function ForgotPasswordPage() {
           </div>
 
           <Button type="submit" disabled={loading} className="w-full mt-2">
-            {loading ? 'Preparing reset instructions…' : 'Send reset instructions ↗'}
+            {loading ? (
+              'Preparing reset instructions…'
+            ) : (
+              <span className="flex items-center justify-center gap-1.5">
+                Send reset instructions <Icon name="arrow_forward" size={16} />
+              </span>
+            )}
           </Button>
         </form>
       ) : (
@@ -92,7 +103,9 @@ export default function ForgotPasswordPage() {
                 Shown only when Django DEBUG is active.
               </p>
               <Button asChild className="w-full">
-                <Link href={devUrl}>Set a new password ↗</Link>
+                <Link href={devUrl} className="flex items-center justify-center gap-1.5">
+                  Set a new password <Icon name="arrow_forward" size={16} />
+                </Link>
               </Button>
             </div>
           )}

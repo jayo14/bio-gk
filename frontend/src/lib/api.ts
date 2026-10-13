@@ -2,15 +2,32 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api';
 
 export type ApiError = Error & { fields?: Record<string, string | string[]> };
 
-export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+export type ApiRequestOptions = Omit<RequestInit, 'body'> & {
+  body?: unknown;
+};
+
+export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const headers = new Headers(options.headers);
-  if (options.body && !headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json');
+  let body = options.body;
+
+  if (body !== undefined && body !== null) {
+    if (
+      typeof body === 'object' &&
+      !(body instanceof FormData) &&
+      !(body instanceof Blob) &&
+      !(body instanceof URLSearchParams)
+    ) {
+      body = JSON.stringify(body);
+    }
+    if (!headers.has('Content-Type') && typeof body === 'string') {
+      headers.set('Content-Type', 'application/json');
+    }
   }
 
   // Include credentials (cookies) in every request - HttpOnly cookies handle authentication safely
   const fetchOptions: RequestInit = {
     ...options,
+    body: body as BodyInit,
     headers,
     credentials: 'include',
     cache: 'no-store',

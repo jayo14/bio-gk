@@ -7,30 +7,33 @@ import { AuthShell } from '@/components/AuthShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Icon } from '@/components/ui/icon';
+import { toast } from '@/components/ui/sonner';
 import { apiRequest } from '@/lib/api';
 
-function ResetForm() {
-  const params = useSearchParams();
+function ResetPasswordContent() {
   const router = useRouter();
-  const uid = params.get('uid') || '';
-  const token = params.get('token') || '';
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token') || '';
 
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
+
     if (password !== confirm) {
       setError('Passwords do not match.');
       return;
     }
-    if (!uid || !token) {
-      setError('Incomplete reset link. Please request a new password reset link.');
+
+    if (!token) {
+      setError('Missing reset token. Please request a new password reset link.');
       return;
     }
 
@@ -38,12 +41,17 @@ function ResetForm() {
     try {
       await apiRequest('/auth/reset-password/', {
         method: 'POST',
-        body: JSON.stringify({ uid, token, password }),
+        body: JSON.stringify({ token, password }),
       });
       setSuccess(true);
-      window.setTimeout(() => router.push('/login'), 1800);
+      toast.success('Password updated successfully! Redirecting to login…');
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not reset your password. Please request a new link.');
+      const msg = err instanceof Error ? err.message : 'Could not reset your password. The link may have expired.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -61,8 +69,8 @@ function ResetForm() {
       footer={
         <>
           Changed your mind?{' '}
-          <Link href="/login" className="text-primary font-bold hover:underline">
-            Back to login ↗
+          <Link href="/login" className="text-primary font-bold hover:underline inline-flex items-center gap-0.5">
+            Back to login <Icon name="north_east" size={13} />
           </Link>
         </>
       }
@@ -91,15 +99,16 @@ function ResetForm() {
                 minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pr-16"
+                className="pr-12"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-secondary-text hover:text-dark transition"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-text hover:text-dark transition p-1"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? 'Hide' : 'Show'}
+                <Icon name={showPassword ? 'visibility_off' : 'visibility'} size={18} />
               </button>
             </div>
           </div>
@@ -120,7 +129,13 @@ function ResetForm() {
           </div>
 
           <Button type="submit" disabled={loading} className="w-full mt-2">
-            {loading ? 'Updating password…' : 'Update password ↗'}
+            {loading ? (
+              'Updating password…'
+            ) : (
+              <span className="flex items-center justify-center gap-1.5">
+                Update password <Icon name="arrow_forward" size={16} />
+              </span>
+            )}
           </Button>
         </form>
       )}
@@ -133,11 +148,11 @@ export default function ResetPasswordPage() {
     <Suspense
       fallback={
         <main className="min-h-screen px-4 py-24 flex items-center justify-center bg-background">
-          <p className="text-xs font-bold text-secondary-text">Loading secure reset form…</p>
+          <p className="text-xs font-bold text-secondary-text">Loading password reset…</p>
         </main>
       }
     >
-      <ResetForm />
+      <ResetPasswordContent />
     </Suspense>
   );
 }

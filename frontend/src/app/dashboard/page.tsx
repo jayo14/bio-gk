@@ -25,6 +25,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { BrandLogo } from '@/components/BrandLogo';
+import { Icon } from '@/components/ui/icon';
+import { toast } from '@/components/ui/sonner';
 
 type Tab = 'overview' | 'inbox' | 'profile' | 'payouts' | 'security';
 
@@ -134,6 +137,7 @@ export default function DashboardPage() {
 
   async function handleLogout() {
     await logout();
+    toast.success('Signed out successfully.');
     router.replace('/login');
   }
 
@@ -142,6 +146,7 @@ export default function DashboardPage() {
     const url = `${window.location.origin}/${dashboardData.creator.username}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
+    toast.success('Bio link copied to clipboard!');
     setTimeout(() => setCopied(false), 2000);
   }
 
@@ -149,7 +154,9 @@ export default function DashboardPage() {
   async function handleResolveAccount() {
     setBankMsg(null);
     if (!selectedBankCode || accountNumber.length !== 10) {
-      setBankMsg({ text: 'Please select a bank and enter a valid 10-digit account number.', type: 'error' });
+      const msg = 'Please select a bank and enter a valid 10-digit account number.';
+      setBankMsg({ text: msg, type: 'error' });
+      toast.error(msg);
       return;
     }
     setResolvingBank(true);
@@ -157,9 +164,12 @@ export default function DashboardPage() {
       const res = await resolveBankAccount(accountNumber, selectedBankCode);
       setResolvedAccountName(res.account_name);
       setBankMsg({ text: `Verified Account Name: ${res.account_name}`, type: 'success' });
+      toast.success(`Account Verified: ${res.account_name}`);
     } catch (err) {
       setResolvedAccountName('');
-      setBankMsg({ text: err instanceof Error ? err.message : 'Could not resolve account.', type: 'error' });
+      const msg = err instanceof Error ? err.message : 'Could not resolve account.';
+      setBankMsg({ text: msg, type: 'error' });
+      toast.error(msg);
     } finally {
       setResolvingBank(false);
     }
@@ -179,11 +189,15 @@ export default function DashboardPage() {
         bank_name: bankName,
         account_number: accountNumber,
       });
-      setBankMsg({ text: 'Paystack subaccount successfully linked! Payouts are now active.', type: 'success' });
+      const successText = 'Paystack subaccount successfully linked! Payouts are now active.';
+      setBankMsg({ text: successText, type: 'success' });
+      toast.success(successText);
       const updated = await getCreatorDashboard();
       setDashboardData(updated);
     } catch (err) {
-      setBankMsg({ text: err instanceof Error ? err.message : 'Failed to connect bank account.', type: 'error' });
+      const msg = err instanceof Error ? err.message : 'Failed to connect bank account.';
+      setBankMsg({ text: msg, type: 'error' });
+      toast.error(msg);
     } finally {
       setConnectingBank(false);
     }
@@ -216,11 +230,15 @@ export default function DashboardPage() {
       };
 
       await updateCreatorProfile(payload);
-      setProfileMsg({ text: 'Profile preferences updated successfully!', type: 'success' });
+      const successText = 'Profile preferences updated successfully!';
+      setProfileMsg({ text: successText, type: 'success' });
+      toast.success(successText);
       const updated = await getCreatorDashboard();
       setDashboardData(updated);
     } catch (err) {
-      setProfileMsg({ text: err instanceof Error ? err.message : 'Could not update profile.', type: 'error' });
+      const msg = err instanceof Error ? err.message : 'Could not update profile.';
+      setProfileMsg({ text: msg, type: 'error' });
+      toast.error(msg);
     } finally {
       setProfileSaving(false);
     }
@@ -233,6 +251,7 @@ export default function DashboardPage() {
       setInboxItems((prev) =>
         prev.map((item) => (item.id === id ? { ...item, payment_status: 'read' } : item))
       );
+      toast.success('Message marked as read.');
       if (dashboardData) {
         setDashboardData({
           ...dashboardData,
@@ -243,7 +262,8 @@ export default function DashboardPage() {
         });
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to mark read');
+      const msg = err instanceof Error ? err.message : 'Failed to mark read';
+      toast.error(msg);
     }
   }
 
@@ -252,23 +272,31 @@ export default function DashboardPage() {
     e.preventDefault();
     setPasswordMsg(null);
     if (newPassword !== confirmPassword) {
-      setPasswordMsg({ text: 'New passwords do not match.', type: 'error' });
+      const msg = 'New passwords do not match.';
+      setPasswordMsg({ text: msg, type: 'error' });
+      toast.error(msg);
       return;
     }
     if (newPassword.length < 8) {
-      setPasswordMsg({ text: 'New password must be at least 8 characters.', type: 'error' });
+      const msg = 'New password must be at least 8 characters.';
+      setPasswordMsg({ text: msg, type: 'error' });
+      toast.error(msg);
       return;
     }
 
     setPasswordSaving(true);
     try {
       await changePassword({ current_password: currentPassword, new_password: newPassword });
-      setPasswordMsg({ text: 'Password successfully changed!', type: 'success' });
+      const successText = 'Password successfully changed!';
+      setPasswordMsg({ text: successText, type: 'success' });
+      toast.success(successText);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setPasswordMsg({ text: err instanceof Error ? err.message : 'Could not change password.', type: 'error' });
+      const msg = err instanceof Error ? err.message : 'Could not change password.';
+      setPasswordMsg({ text: msg, type: 'error' });
+      toast.error(msg);
     } finally {
       setPasswordSaving(false);
     }
@@ -291,9 +319,7 @@ export default function DashboardPage() {
       {/* Top Navbar */}
       <nav className="flex items-center justify-between border-b border-border pb-5">
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-2xl font-black tracking-tight text-dark">
-            gate<span className="text-primary">.</span>
-          </Link>
+          <BrandLogo />
           <Badge variant="secondary" className="hidden sm:inline-flex">
             Creator Workspace
           </Badge>
@@ -301,9 +327,10 @@ export default function DashboardPage() {
 
         <div className="flex items-center gap-2.5">
           {creator?.username && (
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className="gap-1.5">
               <Link href={`/${creator.username}`} target="_blank">
-                View page <span aria-hidden="true" className="text-primary">↗</span>
+                <span>View page</span>
+                <Icon name="north_east" size={14} className="text-primary" />
               </Link>
             </Button>
           )}
@@ -325,8 +352,18 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button onClick={handleCopyProfileLink} size="sm">
-              {copied ? 'Link Copied ✓' : 'Copy Bio Link ↗'}
+            <Button onClick={handleCopyProfileLink} size="sm" className="gap-1.5">
+              {copied ? (
+                <>
+                  <Icon name="check" size={15} className="text-success" />
+                  <span>Link Copied</span>
+                </>
+              ) : (
+                <>
+                  <Icon name="content_copy" size={15} />
+                  <span>Copy Bio Link</span>
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -344,7 +381,7 @@ export default function DashboardPage() {
             { id: 'profile', label: 'Profile & Pricing' },
             {
               id: 'payouts',
-              label: `Bank Payouts ${creator?.subaccount_status === 'active' ? '✓' : '⚠️'}`,
+              label: `Bank Payouts (${creator?.subaccount_status === 'active' ? 'Active' : 'Action Required'})`,
             },
             { id: 'security', label: 'Security' },
           ] as const
@@ -376,8 +413,9 @@ export default function DashboardPage() {
                   Connect your Nigerian bank account to start receiving Paystack transfers.
                 </p>
               </div>
-              <Button onClick={() => setActiveTab('payouts')} size="sm">
-                Connect bank ↗
+              <Button onClick={() => setActiveTab('payouts')} size="sm" className="gap-1.5">
+                <span>Connect bank</span>
+                <Icon name="arrow_forward" size={14} />
               </Button>
             </div>
           )}
@@ -426,8 +464,9 @@ export default function DashboardPage() {
               <p className="text-xs text-secondary-text mt-1">
                 You have {metrics?.unread_messages_count || 0} unread message{metrics?.unread_messages_count === 1 ? '' : 's'}.
               </p>
-              <Button onClick={() => setActiveTab('inbox')} variant="outline" size="sm" className="mt-4">
-                Go to Inbox ↗
+              <Button onClick={() => setActiveTab('inbox')} variant="outline" size="sm" className="mt-4 gap-1.5">
+                <span>Go to Inbox</span>
+                <Icon name="arrow_forward" size={14} />
               </Button>
             </Card>
 
@@ -438,8 +477,9 @@ export default function DashboardPage() {
                   ? `Active on Paystack: ${creator.bank_name} (••••${creator.account_number_last4})`
                   : 'Payout account not connected yet.'}
               </p>
-              <Button onClick={() => setActiveTab('payouts')} variant="outline" size="sm" className="mt-4">
-                Manage Bank Details ↗
+              <Button onClick={() => setActiveTab('payouts')} variant="outline" size="sm" className="mt-4 gap-1.5">
+                <span>Manage Bank Details</span>
+                <Icon name="arrow_forward" size={14} />
               </Button>
             </Card>
           </div>
@@ -537,9 +577,10 @@ export default function DashboardPage() {
                         <button
                           onClick={() => handleMarkRead(item.id)}
                           type="button"
-                          className="font-bold text-primary hover:underline cursor-pointer"
+                          className="font-bold text-primary hover:underline cursor-pointer flex items-center gap-1"
                         >
-                          Mark as read ✓
+                          <Icon name="done_all" size={14} />
+                          <span>Mark as read</span>
                         </button>
                       )}
                     </div>
@@ -699,8 +740,15 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <Button type="submit" disabled={profileSaving} className="mt-4">
-              {profileSaving ? 'Saving Changes…' : 'Save Profile Changes ↗'}
+            <Button type="submit" disabled={profileSaving} className="mt-4 gap-1.5">
+              {profileSaving ? (
+                'Saving Changes…'
+              ) : (
+                <>
+                  <span>Save Profile Changes</span>
+                  <Icon name="arrow_forward" size={14} />
+                </>
+              )}
             </Button>
           </form>
         </Card>
@@ -731,7 +779,10 @@ export default function DashboardPage() {
                     {creator.bank_name} · Account ending in ••••{creator.account_number_last4}
                   </p>
                 </div>
-                <Badge variant="success">Verified ✓</Badge>
+                <Badge variant="success" className="gap-1">
+                  <Icon name="verified" fill size={13} />
+                  <span>Verified</span>
+                </Badge>
               </div>
             </div>
           )}
@@ -807,8 +858,16 @@ export default function DashboardPage() {
             <Button
               type="submit"
               disabled={connectingBank || !selectedBankCode || accountNumber.length !== 10}
+              className="gap-1.5"
             >
-              {connectingBank ? 'Connecting with Paystack…' : 'Save & Connect Subaccount ↗'}
+              {connectingBank ? (
+                'Connecting with Paystack…'
+              ) : (
+                <>
+                  <span>Save & Connect Subaccount</span>
+                  <Icon name="arrow_forward" size={14} />
+                </>
+              )}
             </Button>
           </form>
 
@@ -874,8 +933,15 @@ export default function DashboardPage() {
               />
             </div>
 
-            <Button type="submit" disabled={passwordSaving}>
-              {passwordSaving ? 'Updating Password…' : 'Update Password ↗'}
+            <Button type="submit" disabled={passwordSaving} className="gap-1.5">
+              {passwordSaving ? (
+                'Updating Password…'
+              ) : (
+                <>
+                  <span>Update Password</span>
+                  <Icon name="arrow_forward" size={14} />
+                </>
+              )}
             </Button>
           </form>
         </Card>

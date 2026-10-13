@@ -10,6 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { BrandLogo } from '@/components/BrandLogo';
+import { Icon } from '@/components/ui/icon';
+import { toast } from '@/components/ui/sonner';
 
 export default function CreatorProfilePage() {
   const params = useParams();
@@ -82,6 +85,7 @@ export default function CreatorProfilePage() {
     if (typeof window !== 'undefined') {
       navigator.clipboard.writeText(window.location.href);
       setCopied(true);
+      toast.success('Profile link copied to clipboard!');
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -91,17 +95,23 @@ export default function CreatorProfilePage() {
     setError('');
 
     if (!senderName.trim()) {
-      setError('Please enter your name or a pseudonym.');
+      const msg = 'Please enter your name or a pseudonym.';
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
     if (interactionType === 'priority_dm') {
       if (!messageBody.trim()) {
-        setError('Please enter your priority message.');
+        const msg = 'Please enter your priority message.';
+        setError(msg);
+        toast.error(msg);
         return;
       }
       if (messageBody.length > 2000) {
-        setError('Message cannot exceed 2,000 characters.');
+        const msg = 'Message cannot exceed 2,000 characters.';
+        setError(msg);
+        toast.error(msg);
         return;
       }
     }
@@ -115,12 +125,15 @@ export default function CreatorProfilePage() {
       }
 
       if (finalAmountKobo < 10000) {
-        setError('Minimum tip amount is ₦100.');
+        const msg = 'Minimum tip amount is ₦100.';
+        setError(msg);
+        toast.error(msg);
         return;
       }
     }
 
     setSubmitting(true);
+    toast.info('Initializing secure Paystack checkout…');
     try {
       const response = await apiRequest<{ authorization_url: string; reference: string }>('/payments/initialize/', {
         method: 'POST',
@@ -141,7 +154,9 @@ export default function CreatorProfilePage() {
         throw new Error('Unable to start payment session. Please try again.');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not initialize payment.');
+      const msg = err instanceof Error ? err.message : 'Could not initialize payment.';
+      setError(msg);
+      toast.error(msg);
       setSubmitting(false);
     }
   };
@@ -168,8 +183,9 @@ export default function CreatorProfilePage() {
           </p>
           <div className="mt-6 flex flex-col gap-2.5">
             <Button asChild className="w-full">
-              <Link href={`/signup?username=${encodeURIComponent(username)}`}>
-                Claim @{username} ↗
+              <Link href={`/signup?username=${encodeURIComponent(username)}`} className="flex items-center justify-center gap-1.5">
+                <span>Claim @{username}</span>
+                <Icon name="arrow_forward" size={16} />
               </Link>
             </Button>
             <Button asChild variant="outline" className="w-full">
@@ -195,16 +211,25 @@ export default function CreatorProfilePage() {
     <main className="min-h-screen px-4 py-6 sm:py-10 max-w-lg mx-auto bg-background">
       {/* Top Header */}
       <header className="flex items-center justify-between mb-6">
-        <Link href="/" className="text-2xl font-black tracking-tight text-dark">
-          gate<span className="text-primary">.</span>
-        </Link>
+        <BrandLogo />
         <Button
           onClick={handleCopyLink}
           type="button"
           variant="outline"
           size="sm"
+          className="gap-1.5"
         >
-          {copied ? 'Copied ✓' : 'Share link ↗'}
+          {copied ? (
+            <>
+              <Icon name="check" size={15} className="text-success" />
+              <span>Copied</span>
+            </>
+          ) : (
+            <>
+              <Icon name="share" size={15} />
+              <span>Share link</span>
+            </>
+          )}
         </Button>
       </header>
 
@@ -234,8 +259,9 @@ export default function CreatorProfilePage() {
                 {creator.display_name}
               </h1>
               {creator.is_verified && (
-                <Badge variant="success" className="text-[10px]">
-                  ✓ Verified
+                <Badge variant="success" className="text-[10px] gap-1">
+                  <Icon name="verified" fill size={13} />
+                  <span>Verified</span>
                 </Badge>
               )}
             </div>
@@ -403,11 +429,19 @@ export default function CreatorProfilePage() {
             disabled={submitting}
             className="w-full h-12 text-sm"
           >
-            {submitting ? 'Redirecting to Paystack…' : `Pay ${formattedAmount} via Paystack ↗`}
+            {submitting ? (
+              'Redirecting to Paystack…'
+            ) : (
+              <span className="flex items-center justify-center gap-1.5">
+                <span>Pay {formattedAmount} via Paystack</span>
+                <Icon name="arrow_forward" size={16} />
+              </span>
+            )}
           </Button>
 
-          <p className="text-center text-[10px] text-secondary-text leading-relaxed">
-            🔒 Secured by Paystack. Cards, Bank Transfer, USSD & Apple Pay.
+          <p className="text-center text-[10px] text-secondary-text leading-relaxed flex items-center justify-center gap-1">
+            <Icon name="lock" size={12} className="text-secondary-text" />
+            <span>Secured by Paystack. Cards, Bank Transfer, USSD & Apple Pay.</span>
           </p>
         </form>
       </Card>
@@ -417,7 +451,10 @@ export default function CreatorProfilePage() {
         <Card className="mt-8 p-6 border-border bg-surface shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-base font-black tracking-tight text-dark">Odogwu Wall 🏆</h2>
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-base font-black tracking-tight text-dark">Odogwu Wall</h2>
+                <Icon name="crown" fill size={16} className="text-amber-500" />
+              </div>
               <p className="text-[11px] text-secondary-text">Top supporters of @{creator.username}</p>
             </div>
             {/* Period Filters */}
