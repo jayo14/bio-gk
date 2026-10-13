@@ -3,11 +3,12 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
-import { CheckCircle2, XCircle, Clock, RefreshCw, ArrowLeft, ArrowUpRight } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Icon } from '@/components/ui/icon';
+import { toast } from '@/components/ui/sonner';
 
 type PaymentVerification = {
   status: 'success' | 'pending' | 'failed' | 'abandoned';
@@ -41,9 +42,16 @@ function PaymentReturnContent() {
     apiRequest<PaymentVerification>(`/payments/verify/${encodeURIComponent(ref)}/`)
       .then((data) => {
         setVerification(data);
+        if (data.status === 'success') {
+          toast.success('Payment verified successfully! Thank you for your support.');
+        } else if (data.status === 'failed') {
+          toast.error('Payment verification failed.');
+        }
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : 'Unable to verify payment status.');
+        const msg = err instanceof Error ? err.message : 'Unable to verify payment status.';
+        setError(msg);
+        toast.error(msg);
       })
       .finally(() => {
         setLoading(false);
@@ -77,7 +85,7 @@ function PaymentReturnContent() {
             ) : error ? (
               <div className="py-4">
                 <div className="w-14 h-14 rounded-full bg-error/10 border border-error/20 text-error flex items-center justify-center mx-auto mb-4">
-                  <XCircle className="w-8 h-8" />
+                  <Icon name="cancel" fill size={32} />
                 </div>
                 <Badge variant="error" className="mb-2 uppercase tracking-widest text-[10px]">
                   Verification Error
@@ -90,11 +98,11 @@ function PaymentReturnContent() {
                     onClick={() => checkStatus(reference)}
                     className="w-full gap-2"
                   >
-                    <RefreshCw className="w-4 h-4" /> Retry verification
+                    <Icon name="refresh" size={16} /> Retry verification
                   </Button>
                   <Button variant="outline" asChild className="w-full gap-2">
                     <Link href="/">
-                      <ArrowLeft className="w-4 h-4" /> Back to Home
+                      <Icon name="arrow_back" size={16} /> Back to Home
                     </Link>
                   </Button>
                 </div>
@@ -102,7 +110,7 @@ function PaymentReturnContent() {
             ) : verification?.status === 'success' ? (
               <div className="py-4">
                 <div className="w-16 h-16 rounded-full bg-success/10 border border-success/20 text-success flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="w-9 h-9" />
+                  <Icon name="check_circle" fill size={36} />
                 </div>
                 <Badge variant="success" className="mb-2 uppercase tracking-widest text-[10px]">
                   Payment Verified
@@ -140,13 +148,13 @@ function PaymentReturnContent() {
                   {verification.creator_username && (
                     <Button asChild className="w-full gap-2">
                       <Link href={`/${verification.creator_username}`}>
-                        Return to @{verification.creator_username}&apos;s profile <ArrowUpRight className="w-4 h-4" />
+                        Return to @{verification.creator_username}&apos;s profile <Icon name="north_east" size={16} />
                       </Link>
                     </Button>
                   )}
                   <Button variant="outline" asChild className="w-full gap-2">
                     <Link href="/">
-                      <ArrowLeft className="w-4 h-4" /> Back to Home
+                      <Icon name="arrow_back" size={16} /> Back to Home
                     </Link>
                   </Button>
                 </div>
@@ -154,7 +162,7 @@ function PaymentReturnContent() {
             ) : (
               <div className="py-4">
                 <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center mx-auto mb-4">
-                  <Clock className="w-8 h-8" />
+                  <Icon name="schedule" fill size={32} />
                 </div>
                 <Badge variant="secondary" className="mb-2 uppercase tracking-widest text-[10px]">
                   Status: {verification?.status || 'Pending'}
@@ -170,11 +178,11 @@ function PaymentReturnContent() {
                     onClick={() => checkStatus(reference)}
                     className="w-full gap-2"
                   >
-                    <RefreshCw className="w-4 h-4" /> Re-check payment status
+                    <Icon name="refresh" size={16} /> Re-check payment status
                   </Button>
                   <Button variant="outline" asChild className="w-full gap-2">
                     <Link href="/">
-                      <ArrowLeft className="w-4 h-4" /> Back to Home
+                      <Icon name="arrow_back" size={16} /> Back to Home
                     </Link>
                   </Button>
                 </div>

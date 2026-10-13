@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import type { InputHTMLAttributes, ReactNode } from 'react';
+import { BrandLogo } from '@/components/BrandLogo';
+import { Icon } from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -20,14 +22,13 @@ export function AuthShell({
     <main className="min-h-screen px-4 py-6 sm:px-8 bg-background flex flex-col justify-between">
       {/* Top Bar */}
       <div className="max-w-5xl w-full mx-auto flex items-center justify-between pb-4">
-        <Link href="/" className="text-2xl font-black tracking-tight text-dark">
-          gate<span className="text-primary">.</span>
-        </Link>
+        <BrandLogo />
         <Link
           href="/"
-          className="text-xs font-bold text-secondary-text hover:text-dark transition flex items-center gap-1"
+          className="text-xs font-bold text-secondary-text hover:text-dark transition flex items-center gap-1.5"
         >
-          Back to home <span aria-hidden="true" className="text-primary">↗</span>
+          <span>Back to home</span>
+          <Icon name="north_east" size={14} className="text-primary" />
         </Link>
       </div>
 
